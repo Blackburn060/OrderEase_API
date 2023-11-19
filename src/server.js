@@ -80,10 +80,10 @@ app.post("/api/adicionar-produto", async (req, res) => {
     }
 
     // Remova o prefixo "data:image/png;base64," da imagem
-    /* const base64WithoutPrefix = imageBase64.replace(
+    const base64WithoutPrefix = imageBase64.replace(
       /^data:image\/[a-zA-Z+]+;base64,/,
       ""
-    ); */
+    );
 
     const imageUri = await uploadImageToImgBB(base64WithoutPrefix);
 
