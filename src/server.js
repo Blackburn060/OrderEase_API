@@ -1,22 +1,22 @@
-/* const express = require("express"); */
-/* const cors = require("cors"); */
+const express = require("express");
+const cors = require("cors");
 const admin = require("firebase-admin");
 const request = require("request");
 const serviceAccount = require("./orderease-76588-firebase-adminsdk-ie91v-65023f0baa.json");
 
-/* const app = express(); */
-/* const PORT = process.env.PORT || 3001; */
+const app = express();
+const PORT = process.env.PORT || 3001;
 
 // Configure o cors
-/* app.use(cors({ origin: "*" })); */
+app.use(cors({ origin: "*" }));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://orderease-76588-default-rtdb.firebaseio.com",
 });
 
-/* app.use(express.urlencoded({ extended: true })); */
-/* app.use(express.json({ limit: "50mb" })); */
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
 
 const db = admin.firestore();
 
