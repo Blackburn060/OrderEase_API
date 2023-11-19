@@ -80,10 +80,10 @@ app.post("/api/adicionar-produto", async (req, res) => {
     }
 
     // Remova o prefixo "data:image/png;base64," da imagem
-    const base64WithoutPrefix = imageBase64.replace(
+    /* const base64WithoutPrefix = imageBase64.replace(
       /^data:image\/[a-zA-Z+]+;base64,/,
       ""
-    );
+    ); */
 
     const imageUri = await uploadImageToImgBB(base64WithoutPrefix);
 
@@ -222,6 +222,108 @@ app.delete("/api/excluir-produto/:productId", async (req, res) => {
   }
 });
 
+// Route to save general configurations
+app.post("/api/salvar-configuracoes", async (req, res) => {
+  try {
+    const {
+      companyName,
+      companyLogo,
+      loginPageImage,
+      homePageImage,
+      primaryColor,
+      secondaryColor,
+    } = req.body;
+
+    // Validação de campos
+    /* if (!companyName || !primaryColor || !secondaryColor) {
+      return res
+        .status(400)
+        .json({
+          error: "Nome da empresa, cor principal e cor secundária são obrigatórios.",
+        });
+    } */
+
+    // Função para fazer o upload da imagem para o ImgBB e obter a URL
+    /* const uploadAndReturnUrl = async (imageBase64) => {
+      try {
+        const options = {
+          method: "POST",
+          url: "https://api.imgbb.com/1/upload?key=6e2825a52e0efeaa3e997ff88d245086",
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+          formData: {
+            image: imageBase64,
+          },
+        };
+
+        const response = await new Promise((resolve, reject) => {
+          request(options, (error, response, body) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(body);
+            }
+          });
+        });
+
+        const responseData = JSON.parse(response);
+        const imageUri = responseData.data.url;
+        return imageUri;
+      } catch (error) {
+        throw error;
+      }
+    }; */
+
+    // Upload de imagens e obtenção de URLs
+    const companyLogoUrl = await uploadImageToImgBB(companyLogo);
+    const loginPageImageUrl = await uploadImageToImgBB(loginPageImage);
+    const homePageImageUrl = await uploadImageToImgBB(homePageImage);
+
+    const collectionRef = db.collection("Configuracoes");
+    const configuracoesGeraisDocRef = collectionRef.doc("configuracoesGerais");
+
+    const configuracoesData = {
+      companyName,
+      companyLogo: companyLogoUrl,
+      loginPageImage: loginPageImageUrl,
+      homePageImage: homePageImageUrl,
+      primaryColor,
+      secondaryColor,
+    };
+
+    await configuracoesGeraisDocRef.set(configuracoesData, { merge: true });
+
+    console.log("Servidor: Configurações salvas com sucesso!");
+    return res
+      .status(201)
+      .json({ message: "Servidor: Configurações salvas com sucesso" });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Route to get general configurations
+app.get("/api/obter-configuracoes", async (req, res) => {
+  try {
+    const collectionRef = db.collection("Configuracoes");
+    const configuracoesGeraisDocRef = collectionRef.doc("configuracoesGerais");
+
+    const configuracoesSnapshot = await configuracoesGeraisDocRef.get();
+
+    if (!configuracoesSnapshot.exists) {
+      return res.status(404).json({ error: "Configurações não encontradas" });
+    }
+
+    const configuracoesData = configuracoesSnapshot.data();
+
+    return res.status(200).json(configuracoesData);
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Servidor Node.js rodando na porta ${PORT}`);
