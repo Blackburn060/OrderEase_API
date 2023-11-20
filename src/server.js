@@ -254,6 +254,26 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
   }
 });
 
+// route to get requests
+app.get("/api/obter-pedidos", async (req, res) => {
+  try {
+    const collectionRef = db.collection("pedidos");
+
+    const pedidosSnapshot = await collectionRef.get();
+
+    if (!pedidosSnapshot.exists) {
+      return res.status(404).json({ error: "Configurações não encontradas" });
+    }
+
+    const pedidosData = pedidosSnapshot.data();
+
+    return res.status(200).json(pedidosData);
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // Route to get general configurations
 app.get("/api/obter-configuracoes", async (req, res) => {
   try {
