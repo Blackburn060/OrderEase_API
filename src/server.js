@@ -64,44 +64,38 @@ app.post("/api/adicionar-produto", async (req, res) => {
       productStatus,
     } = req.body;
 
-    // Validação de campos
-    if (
-      !productName ||
-      !productDescription ||
-      !productCategory ||
-      !productValue ||
-      !imageBase64
-    ) {
-      return res
-        .status(400)
-        .json({
-          error: "Todos os campos são obrigatórios, incluindo a imagem.",
-        });
-    }
+    let imageUri;
 
     // Remova o prefixo "data:image/png;base64," da imagem
-    const base64WithoutPrefix = imageBase64.replace(
-      /^data:image\/[a-zA-Z+]+;base64,/,
-      ""
-    );
-
-    const imageUri = await uploadImageToImgBB(base64WithoutPrefix);
+    // Se houver uma imagem, faça o upload e obtenha a URI
+    if (imageBase64) {
+      const base64WithoutPrefix = imageBase64.replace(
+        /^data:image\/[a-zA-Z+]+;base64,/,
+        ""
+      );
+      imageUri = await uploadImageToImgBB(base64WithoutPrefix);
+    } else {
+      imageUri = "https://i.ibb.co/cNZHPHT/e1b861201f3b.png";
+    }
 
     const collectionRef = db.collection("Produto");
 
-    const docRef = await collectionRef.add({
+    const data = {
       nome: productName,
       descricao: productDescription,
       categoria: productCategory,
       valor: productValue,
       status: productStatus,
-      imageUri,
-    });
+      imageUri: imageUri,
+    };
+
+    const docRef = await collectionRef.add(data);
 
     console.log("Servidor: Produto cadastrado com ID:", docRef.id);
-    return res
-      .status(201)
-      .json({ productId: docRef.id, message: "Servidor: Produto cadastrado com sucesso" });
+    return res.status(201).json({
+      productId: docRef.id,
+      message: "Servidor: Produto cadastrado com sucesso",
+    });
   } catch (error) {
     console.error("Erro no servidor:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
@@ -126,7 +120,6 @@ app.get("/api/listar-produtos", async (req, res) => {
     }));
 
     res.status(200).json(productsData);
-
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -152,11 +145,9 @@ app.put("/api/atualizar-produto/:productId", async (req, res) => {
       !productCategory ||
       !productValue
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "Todos os campos são obrigatórios, incluindo a imagem.",
-        });
+      return res.status(400).json({
+        error: "Todos os campos são obrigatórios, incluindo a imagem.",
+      });
     }
 
     let imageUri = null;
@@ -233,47 +224,6 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
       primaryColor,
       secondaryColor,
     } = req.body;
-
-    // Validação de campos
-    /* if (!companyName || !primaryColor || !secondaryColor) {
-      return res
-        .status(400)
-        .json({
-          error: "Nome da empresa, cor principal e cor secundária são obrigatórios.",
-        });
-    } */
-
-    // Função para fazer o upload da imagem para o ImgBB e obter a URL
-    /* const uploadAndReturnUrl = async (imageBase64) => {
-      try {
-        const options = {
-          method: "POST",
-          url: "https://api.imgbb.com/1/upload?key=6e2825a52e0efeaa3e997ff88d245086",
-          headers: {
-            "content-type": "multipart/form-data",
-          },
-          formData: {
-            image: imageBase64,
-          },
-        };
-
-        const response = await new Promise((resolve, reject) => {
-          request(options, (error, response, body) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(body);
-            }
-          });
-        });
-
-        const responseData = JSON.parse(response);
-        const imageUri = responseData.data.url;
-        return imageUri;
-      } catch (error) {
-        throw error;
-      }
-    }; */
 
     // Upload de imagens e obtenção de URLs
     const companyLogoUrl = await uploadImageToImgBB(companyLogo);
