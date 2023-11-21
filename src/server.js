@@ -261,11 +261,16 @@ app.get("/api/obter-pedidos", async (req, res) => {
 
     const pedidosSnapshot = await collectionRef.get();
 
-    if (!pedidosSnapshot.exists) {
-      return res.status(404).json({ error: "Configurações não encontradas" });
+    if (pedidosSnapshot.empty) {
+      return res.status(404).json({ error: "Nenhum pedido encontrado" });
     }
 
-    const pedidosData = pedidosSnapshot.data();
+    const pedidosData = [];
+    
+    // Itera sobre os documentos para obter os dados
+    pedidosSnapshot.forEach((doc) => {
+      pedidosData.push(doc.data());
+    });
 
     return res.status(200).json(pedidosData);
   } catch (error) {
