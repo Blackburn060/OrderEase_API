@@ -78,13 +78,16 @@ app.post("/api/adicionar-produto", async (req, res) => {
       imageUri = "https://i.ibb.co/cNZHPHT/e1b861201f3b.png";
     }
 
+    // Converta productValue para número
+    const numericProductValue = parseFloat(productValue.replace(/[^0-9,.]/g, ""));
+
     const collectionRef = db.collection("Produto");
 
     const data = {
       nome: productName,
       descricao: productDescription,
       categoria: productCategory,
-      valor: productValue,
+      valor: numericProductValue,
       status: productStatus,
       imageUri: imageUri,
     };
