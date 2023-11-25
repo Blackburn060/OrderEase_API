@@ -301,7 +301,7 @@ app.put("/api/atualizar-garcom/:waiterId", async (req, res) => {
       });
     }
 
-    const collectionRef = db.collection("Garcon");
+    const collectionRef = db.collection("Garcom");
     const waiterRef = collectionRef.doc(waiterId); // Use o ID do documento do Firestore
 
     const updateData = {
