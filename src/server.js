@@ -79,7 +79,7 @@ app.post("/api/adicionar-produto", async (req, res) => {
     }
 
     // Converta productValue para número
-    const numericProductValue = parseFloat(productValue.replace(/[^0-9,.]/g, ""));
+    const numericProductValue = parseFloat(productValue.replace(/[^0-9.]/g, ""));
 
     const collectionRef = db.collection("Produto");
 
@@ -210,6 +210,137 @@ app.delete("/api/excluir-produto/:productId", async (req, res) => {
     return res
       .status(200)
       .json({ message: "Servidor: Produto excluído com sucesso" });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Make the post in the firestore api (Create)
+app.post("/api/adicionar-garcom", async (req, res) => {
+  try {
+    const {
+      waiterName,
+      waiterSurname,
+      waiterEmail,
+      waiterSituation,
+      waiterPassword,
+      waiterStatus,
+    } = req.body;
+
+    const collectionRef = db.collection("Garcom");
+
+    const data = {
+      nome: waiterName,
+      sobrenome: waiterSurname,
+      email: waiterEmail,
+      senha: waiterPassword,
+      situacao: waiterSituation,
+      status: waiterStatus,
+    };
+
+    const docRef = await collectionRef.add(data);
+
+    console.log("Servidor: Garçom cadastrado com ID:", docRef.id);
+    return res.status(201).json({
+      waiterId: docRef.id,
+      message: "Servidor: Garçom cadastrado com sucesso",
+    });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Perform a get on the firestore api (Read)
+app.get("/api/listar-garcons", async (req, res) => {
+  try {
+    let query = db.collection("Garcom");
+
+    // Adiciona uma condição específica, se fornecida nos parâmetros da solicitação
+    if (req.query.status) {
+      query = query.where("status", "==", req.query.status);
+    }
+
+    const waitersSnapshot = await query.get();
+
+    const waitersData = waitersSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json(waitersData);
+  } catch (error) {
+    console.error("Erro ao buscar garçons:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Route to update an existing product (update)
+app.put("/api/atualizar-garcom/:waiterId", async (req, res) => {
+  try {
+    const { waiterId } = req.params;
+    const {
+      waiterName,
+      waiterSurname,
+      waiterEmail,
+      waiterSituation,
+      waiterPassword,
+    } = req.body;
+
+    // Validação de campos
+    if (
+      !waiterName ||
+      !waiterSurname ||
+      !waiterEmail ||
+      !waiterSituation ||
+      !waiterPassword
+    ) {
+      return res.status(400).json({
+        error: "Todos os campos são obrigatórios.",
+      });
+    }
+
+    const collectionRef = db.collection("Garcon");
+    const waiterRef = collectionRef.doc(waiterId); // Use o ID do documento do Firestore
+
+    const updateData = {
+      nome: waiterName,
+      sobrenome: waiterSurname,
+      email: waiterEmail,
+      senha: waiterPassword,
+      situacao: waiterSituation,
+    };
+
+    await waiterRef.update(updateData);
+
+    console.log("Servidor: Garçom atualizado com sucesso!");
+    return res
+      .status(200)
+      .json({ message: "Servidor: Garçom atualizado com sucesso" });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Route to inactivate a garcom (delete)
+app.delete("/api/excluir-garcom/:waiterId", async (req, res) => {
+  try {
+    const { waiterId } = req.params;
+
+    // Atualizar o status do garcom para "Inativo"
+    const collectionRef = db.collection("Garcom");
+    const waiterRef = collectionRef.doc(waiterId);
+
+    await waiterRef.update({
+      status: "Inativo",
+    });
+
+    console.log("Servidor: Garçom excluído com sucesso!");
+    return res
+      .status(200)
+      .json({ message: "Servidor: Garçom excluído com sucesso" });
   } catch (error) {
     console.error("Erro no servidor:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
