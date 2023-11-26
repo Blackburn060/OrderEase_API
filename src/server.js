@@ -79,7 +79,9 @@ app.post("/api/adicionar-produto", async (req, res) => {
     }
 
     // Converta productValue para número
-    const numericProductValue = parseFloat(productValue.replace(/[^0-9.]/g, ""));
+    const numericProductValue = parseFloat(
+      productValue.replace(/[^0-9.]/g, "")
+    );
 
     const collectionRef = db.collection("Produto");
 
@@ -347,6 +349,31 @@ app.delete("/api/excluir-garcom/:waiterId", async (req, res) => {
   }
 });
 
+// route to get requests
+app.get("/api/obter-pedidos", async (req, res) => {
+  try {
+    const collectionRef = db.collection("pedidos");
+
+    const pedidosSnapshot = await collectionRef.get();
+
+    if (pedidosSnapshot.empty) {
+      return res.status(404).json({ error: "Nenhum pedido encontrado" });
+    }
+
+    const pedidosData = [];
+
+    // Itera sobre os documentos para obter os dados
+    pedidosSnapshot.forEach((doc) => {
+      pedidosData.push(doc.data());
+    });
+
+    return res.status(200).json(pedidosData);
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // Route to save general configurations
 app.post("/api/salvar-configuracoes", async (req, res) => {
   try {
@@ -360,21 +387,38 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
     } = req.body;
 
     // Upload de imagens e obtenção de URLs
-    const companyLogoUrl = await uploadImageToImgBB(companyLogo);
-    const loginPageImageUrl = await uploadImageToImgBB(loginPageImage);
-    const homePageImageUrl = await uploadImageToImgBB(homePageImage);
+    if (companyLogoUrl) {
+      const companyLogoUrl = await uploadImageToImgBB(companyLogo);
+    }
+
+    if (loginPageImageUrl) {
+      const loginPageImageUrl = await uploadImageToImgBB(loginPageImage);
+    }
+
+    if (homePageImageUrl) {
+      const homePageImageUrl = await uploadImageToImgBB(homePageImage);
+    }
 
     const collectionRef = db.collection("Configuracoes");
     const configuracoesGeraisDocRef = collectionRef.doc("configuracoesGerais");
 
     const configuracoesData = {
       companyName,
-      companyLogo: companyLogoUrl,
-      loginPageImage: loginPageImageUrl,
-      homePageImage: homePageImageUrl,
       primaryColor,
       secondaryColor,
     };
+
+    if (companyLogoUrl) {
+      configuracoesData.companyLogo = companyLogoUrl;
+    }
+
+    if (loginPageImageUrl) {
+      configuracoesData.loginPageImage = loginPageImageUrl;
+    }
+
+    if (homePageImageUrl) {
+      configuracoesData.homePageImage = homePageImageUrl;
+    }
 
     await configuracoesGeraisDocRef.set(configuracoesData, { merge: true });
 
@@ -382,31 +426,6 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
     return res
       .status(201)
       .json({ message: "Servidor: Configurações salvas com sucesso" });
-  } catch (error) {
-    console.error("Erro no servidor:", error);
-    return res.status(500).json({ error: "Erro interno do servidor" });
-  }
-});
-
-// route to get requests
-app.get("/api/obter-pedidos", async (req, res) => {
-  try {
-    const collectionRef = db.collection("pedidos");
-
-    const pedidosSnapshot = await collectionRef.get();
-
-    if (pedidosSnapshot.empty) {
-      return res.status(404).json({ error: "Nenhum pedido encontrado" });
-    }
-
-    const pedidosData = [];
-    
-    // Itera sobre os documentos para obter os dados
-    pedidosSnapshot.forEach((doc) => {
-      pedidosData.push(doc.data());
-    });
-
-    return res.status(200).json(pedidosData);
   } catch (error) {
     console.error("Erro no servidor:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
