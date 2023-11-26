@@ -79,9 +79,7 @@ app.post("/api/adicionar-produto", async (req, res) => {
     }
 
     // Converta productValue para número
-    const numericProductValue = parseFloat(
-      productValue.replace(/[^0-9.]/g, "")
-    );
+    const numericProductValue = parseFloat(productValue.replace(/[^0-9.]/g, ""));
 
     const collectionRef = db.collection("Produto");
 
@@ -361,7 +359,7 @@ app.get("/api/obter-pedidos", async (req, res) => {
     }
 
     const pedidosData = [];
-
+    
     // Itera sobre os documentos para obter os dados
     pedidosSnapshot.forEach((doc) => {
       pedidosData.push(doc.data());
@@ -386,40 +384,30 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
       secondaryColor,
     } = req.body;
 
-    // Upload de imagens e obtenção de URLs
-    if (companyLogoUrl) {
-      const companyLogoUrl = await uploadImageToImgBB(companyLogo);
-    }
-
-    if (loginPageImageUrl) {
-      const loginPageImageUrl = await uploadImageToImgBB(loginPageImage);
-    }
-
-    if (homePageImageUrl) {
-      const homePageImageUrl = await uploadImageToImgBB(homePageImage);
-    }
-
-    const collectionRef = db.collection("Configuracoes");
-    const configuracoesGeraisDocRef = collectionRef.doc("configuracoesGerais");
-
+    // Inicializa um objeto que conterá apenas os dados que serão armazenados
     const configuracoesData = {
       companyName,
       primaryColor,
       secondaryColor,
     };
 
-    if (companyLogoUrl) {
-      configuracoesData.companyLogo = companyLogoUrl;
+    // Adiciona as imagens ao objeto somente se foram fornecidas
+    if (companyLogo) {
+      configuracoesData.companyLogo = await uploadImageToImgBB(companyLogo);
     }
 
-    if (loginPageImageUrl) {
-      configuracoesData.loginPageImage = loginPageImageUrl;
+    if (loginPageImage) {
+      configuracoesData.loginPageImage = await uploadImageToImgBB(loginPageImage);
     }
 
-    if (homePageImageUrl) {
-      configuracoesData.homePageImage = homePageImageUrl;
+    if (homePageImage) {
+      configuracoesData.homePageImage = await uploadImageToImgBB(homePageImage);
     }
 
+    const collectionRef = db.collection("Configuracoes");
+    const configuracoesGeraisDocRef = collectionRef.doc("configuracoesGerais");
+
+    // Realiza o upload apenas dos dados necessários
     await configuracoesGeraisDocRef.set(configuracoesData, { merge: true });
 
     console.log("Servidor: Configurações salvas com sucesso!");
