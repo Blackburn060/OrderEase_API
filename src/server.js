@@ -165,8 +165,6 @@ app.put("/api/atualizar-produto/:productId", async (req, res) => {
       imageUri = await uploadImageToImgBB(base64WithoutPrefix);
     }
 
-    /* const imageUri = await uploadImageToImgBB(base64WithoutPrefix); */
-
     const collectionRef = db.collection("Produto");
     const productRef = collectionRef.doc(productId); // Use o ID do documento do Firestore
 
@@ -347,7 +345,7 @@ app.delete("/api/excluir-garcom/:waiterId", async (req, res) => {
   }
 });
 
-// route to get requests
+// Route to get requests
 app.get("/api/obter-pedidos", async (req, res) => {
   try {
     const collectionRef = db.collection("pedidos");
@@ -359,13 +357,44 @@ app.get("/api/obter-pedidos", async (req, res) => {
     }
 
     const pedidosData = [];
-    
-    // Itera sobre os documentos para obter os dados
+
+    // Itera sobre os documentos para obter os dados e o ID
     pedidosSnapshot.forEach((doc) => {
-      pedidosData.push(doc.data());
+      // Obtém o ID do documento
+      const pedido = {
+        id: doc.id,
+        ...doc.data(),
+      };
+
+      pedidosData.push(pedido);
     });
 
     return res.status(200).json(pedidosData);
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Route to update requests
+app.put("/api/atualizar-pedido/:requestId", async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status } = req.body;
+
+    // Verifica se o pedido existe
+    const requestRef = db.collection("pedidos").doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      return res.status(404).json({ error: "Pedido não encontrado" });
+    }
+
+    // Atualiza apenas o status do pedido
+    await requestRef.update({ status: status });
+
+    // Retorna uma resposta de sucesso
+    return res.status(200).json({ message: "Status do pedido atualizado com sucesso" });
   } catch (error) {
     console.error("Erro no servidor:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
