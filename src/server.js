@@ -364,6 +364,12 @@ app.get("/api/obter-pedidos", async (req, res) => {
       }
     }
 
+    const pedidosSnapshot = await query.get();
+
+    if (pedidosSnapshot.empty) {
+      return res.status(404).json({ error: "Nenhum pedido encontrado" });
+    }
+
     const pedidosData = [];
 
     // Itera sobre os documentos para obter os dados e o ID
