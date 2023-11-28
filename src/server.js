@@ -348,9 +348,17 @@ app.delete("/api/excluir-garcom/:waiterId", async (req, res) => {
 // Route to get requests
 app.get("/api/obter-pedidos", async (req, res) => {
   try {
+    const { status } = req.query; // Obtém o valor do parâmetro status, se fornecido
     const collectionRef = db.collection("pedidos");
 
-    const pedidosSnapshot = await collectionRef.get();
+    let query = collectionRef; // Inicia a consulta com a coleção
+
+    // Se o parâmetro status estiver presente, filtra pela propriedade status
+    if (status) {
+      query = query.where("status", "==", status);
+    }
+
+    const pedidosSnapshot = await query.get();
 
     if (pedidosSnapshot.empty) {
       return res.status(404).json({ error: "Nenhum pedido encontrado" });
