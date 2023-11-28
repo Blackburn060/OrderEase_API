@@ -355,13 +355,13 @@ app.get("/api/obter-pedidos", async (req, res) => {
 
     // Se o parâmetro status estiver presente, filtra pela propriedade status
     if (status) {
-      query = query.where("status", "==", status);
-    }
-
-    const pedidosSnapshot = await query.get();
-
-    if (pedidosSnapshot.empty) {
-      return res.status(404).json({ error: "Nenhum pedido encontrado" });
+      if (Array.isArray(status)) {
+        // Se status for uma array (indicando múltiplos valores), filtra com a lógica "OU"
+        query = query.where("status", "in", status);
+      } else {
+        // Se status for uma string (indicando um único valor), filtra normalmente
+        query = query.where("status", "==", status);
+      }
     }
 
     const pedidosData = [];
