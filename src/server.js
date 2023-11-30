@@ -420,9 +420,11 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
   try {
     const {
       companyName,
-      companyLogo,
-      loginPageImage,
-      homePageImage,
+      finalWeekSchedules,
+      businessDayHours,
+      linkInstagram,
+      linkFacebook,
+      linkWhatsApp,
       primaryColor,
       secondaryColor,
     } = req.body;
@@ -430,6 +432,11 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
     // Inicializa um objeto que conterá apenas os dados que serão armazenados
     const configuracoesData = {
       companyName,
+      finalWeekSchedules,
+      businessDayHours,
+      linkInstagram,
+      linkFacebook,
+      linkWhatsApp,
       primaryColor,
       secondaryColor,
     };
