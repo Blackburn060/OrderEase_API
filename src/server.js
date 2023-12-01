@@ -420,6 +420,9 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
   try {
     const {
       companyName,
+      companyLogo,
+      loginPageImage,
+      homePageImage,
       finalWeekSchedules,
       businessDayHours,
       linkInstagram,
