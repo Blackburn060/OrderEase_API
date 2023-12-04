@@ -415,6 +415,61 @@ app.put("/api/atualizar-pedido/:requestId", async (req, res) => {
   }
 });
 
+app.post("/api/adicionar-mesa", async (req, res) => {
+  try {
+    const { numero, status } = req.body;
+
+    // Verifica se os campos obrigatórios foram fornecidos
+    if (!numero || !status) {
+      return res.status(400).json({ error: "Número e status são campos obrigatórios" });
+    }
+
+    const collectionRef = db.collection("Mesas");
+
+    // Adiciona uma nova mesa ao Firestore
+    const novaMesaRef = await collectionRef.add({
+      numero,
+      status,
+    });
+
+    // Retorna o ID da nova mesa criada
+    return res.status(201).json({ id: novaMesaRef.id, numero, status });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+app.get("/api/obter-mesas", async (req, res) => {
+  try {
+    const collectionRef = db.collection("Mesas");
+
+    const mesasSnapshot = await collectionRef.get();
+
+    if (mesasSnapshot.empty) {
+      return res.status(404).json({ error: "Nenhuma mesa encontrada" });
+    }
+
+    const mesasData = [];
+
+    // Itera sobre os documentos para obter os dados e o ID
+    mesasSnapshot.forEach((doc) => {
+      // Obtém o ID do documento
+      const mesa = {
+        id: doc.id,
+        ...doc.data(),
+      };
+
+      mesasData.push(mesa);
+    });
+
+    return res.status(200).json(mesasData);
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // Route to save general configurations
 app.post("/api/salvar-configuracoes", async (req, res) => {
   try {
