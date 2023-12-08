@@ -75,7 +75,7 @@ app.post("/api/adicionar-produto", async (req, res) => {
       );
       imageUri = await uploadImageToImgBB(base64WithoutPrefix);
     } else {
-      imageUri = "https://i.ibb.co/cNZHPHT/e1b861201f3b.png";
+      imageUri = "https://i.ibb.co/Tkgk8c3/Imagem-Produto-Padrao.png";
     }
 
     // Converta productValue para número
