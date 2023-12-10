@@ -151,7 +151,7 @@ app.put("/api/atualizar-produto/:productId", async (req, res) => {
       !productValue
     ) {
       return res.status(400).json({
-        error: "Todos os campos são obrigatórios, incluindo a imagem.",
+        error: "Todos os campos são obrigatórios",
       });
     }
 
@@ -180,6 +180,41 @@ app.put("/api/atualizar-produto/:productId", async (req, res) => {
     if (imageUri) {
       updateData.imageUri = imageUri;
     }
+
+    await productRef.update(updateData);
+
+    console.log("Servidor: Produto atualizado com sucesso!");
+    return res
+      .status(200)
+      .json({ message: "Servidor: Produto atualizado com sucesso" });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+app.put("/api/atualizar-produto-cardapio/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const {
+      cardapio
+    } = req.body;
+
+    // Validação de campos
+    if (
+      !cardapio
+    ) {
+      return res.status(400).json({
+        error: "A informação de cardápio é obrigatória",
+      });
+    }
+
+    const collectionRef = db.collection("Produto");
+    const productRef = collectionRef.doc(productId); // Use o ID do documento do Firestore
+
+    const updateData = {
+      cardapio: cardapio,
+    };
 
     await productRef.update(updateData);
 
