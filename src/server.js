@@ -79,7 +79,9 @@ app.post("/api/adicionar-produto", async (req, res) => {
     }
 
     // Converta productValue para número
-    const numericProductValue = parseFloat(productValue.replace(/[^0-9.]/g, ""));
+    const numericProductValue = parseFloat(
+      productValue.replace(/[^0-9.]/g, "")
+    );
 
     const collectionRef = db.collection("Produto");
 
@@ -407,8 +409,10 @@ app.put("/api/atualizar-pedido/:requestId", async (req, res) => {
     // Atualiza apenas o status do pedido
     await requestRef.update({ status: status });
 
-    // Retorna uma resposta de sucesso
-    return res.status(200).json({ message: "Status do pedido atualizado com sucesso" });
+    console.log("Servidor: Pedido atualizado com sucesso!");
+    return res
+      .status(200)
+      .json({ message: "Status do pedido atualizado com sucesso" });
   } catch (error) {
     console.error("Erro no servidor:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
@@ -421,7 +425,9 @@ app.post("/api/adicionar-mesa", async (req, res) => {
 
     // Verifica se os campos obrigatórios foram fornecidos
     if (!numero || !status) {
-      return res.status(400).json({ error: "Número e status são campos obrigatórios" });
+      return res
+        .status(400)
+        .json({ error: "Número e status são campos obrigatórios" });
     }
 
     const collectionRef = db.collection("Mesas");
@@ -432,7 +438,7 @@ app.post("/api/adicionar-mesa", async (req, res) => {
       status,
     });
 
-    // Retorna o ID da nova mesa criada
+    console.log("Servidor: Mesa cadastrada com ID:", novaMesaRef.id);
     return res.status(201).json({ id: novaMesaRef.id, numero, status });
   } catch (error) {
     console.error("Erro no servidor:", error);
@@ -464,6 +470,68 @@ app.get("/api/obter-mesas", async (req, res) => {
     });
 
     return res.status(200).json(mesasData);
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+app.delete("/api/deletar-mesa/:id", async (req, res) => {
+  try {
+    const mesaId = req.params.id;
+
+    // Verifica se o ID foi fornecido
+    if (!mesaId) {
+      return res.status(400).json({ error: "O ID da mesa é obrigatório" });
+    }
+
+    const mesaRef = db.collection("Mesas").doc(mesaId);
+
+    const mesaDoc = await mesaRef.get();
+
+    // Verifica se a mesa existe
+    if (!mesaDoc.exists) {
+      return res.status(404).json({ error: "Mesa não encontrada" });
+    }
+
+    // Deleta a mesa do Firestore
+    await mesaRef.delete();
+
+    console.log("Servidor: Mesa atualizada com sucesso!");
+    return res.status(200).json({ message: "Mesa deletada com sucesso" });
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+app.put("/api/atualizar-mesa/:id", async (req, res) => {
+  try {
+    const mesaId = req.params.id;
+    const { numero, status } = req.body;
+
+    // Verifica se o ID foi fornecido
+    if (!mesaId) {
+      return res.status(400).json({ error: "O ID da mesa é obrigatório" });
+    }
+
+    const mesaRef = db.collection("Mesas").doc(mesaId);
+
+    const mesaDoc = await mesaRef.get();
+
+    // Verifica se a mesa existe
+    if (!mesaDoc.exists) {
+      return res.status(404).json({ error: "Mesa não encontrada" });
+    }
+
+    // Atualiza as informações da mesa no Firestore
+    await mesaRef.update({
+      numero,
+      status,
+    });
+
+    console.log("Servidor: Mesa excluída com sucesso!");
+    return res.status(200).json({ message: "Mesa atualizada com sucesso" });
   } catch (error) {
     console.error("Erro no servidor:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
@@ -505,7 +573,9 @@ app.post("/api/salvar-configuracoes", async (req, res) => {
     }
 
     if (loginPageImage) {
-      configuracoesData.loginPageImage = await uploadImageToImgBB(loginPageImage);
+      configuracoesData.loginPageImage = await uploadImageToImgBB(
+        loginPageImage
+      );
     }
 
     if (homePageImage) {
