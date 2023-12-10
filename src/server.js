@@ -532,7 +532,7 @@ app.delete("/api/deletar-mesa/:id", async (req, res) => {
     // Deleta a mesa do Firestore
     await mesaRef.delete();
 
-    console.log("Servidor: Mesa atualizada com sucesso!");
+    console.log("Servidor: Mesa excluida com sucesso!");
     return res.status(200).json({ message: "Mesa deletada com sucesso" });
   } catch (error) {
     console.error("Erro no servidor:", error);
@@ -565,7 +565,7 @@ app.put("/api/atualizar-mesa/:id", async (req, res) => {
       status,
     });
 
-    console.log("Servidor: Mesa excluída com sucesso!");
+    console.log("Servidor: Mesa atualizada com sucesso!");
     return res.status(200).json({ message: "Mesa atualizada com sucesso" });
   } catch (error) {
     console.error("Erro no servidor:", error);
